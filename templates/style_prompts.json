@@ -1,0 +1,56 @@
+{
+  "emotion_styles": {
+    "平静的": {
+      "keywords": ["peaceful", "serene", "calm", "tranquil", "gentle"],
+      "description": "Create a peaceful and serene video with smooth, gentle transitions"
+    },
+    "动感的": {
+      "keywords": ["dynamic", "energetic", "vibrant", "lively", "active"],
+      "description": "Create an energetic and dynamic video with vibrant movements"
+    },
+    "梦幻的": {
+      "keywords": ["dreamy", "ethereal", "magical", "surreal", "fantasy"],
+      "description": "Create a dreamy and magical video with ethereal, fantasy-like qualities"
+    },
+    "神秘的": {
+      "keywords": ["mysterious", "enigmatic", "dark", "atmospheric", "moody"],
+      "description": "Create a mysterious and atmospheric video with enigmatic mood"
+    },
+    "温馨的": {
+      "keywords": ["warm", "cozy", "heartwarming", "intimate", "tender"],
+      "description": "Create a warm and heartwarming video with cozy, intimate feeling"
+    }
+  },
+  "visual_styles": {
+    "电影感": {
+      "keywords": ["cinematic", "dramatic", "film-like", "professional", "artistic"],
+      "description": "Create a cinematic video with dramatic lighting and professional film-like quality"
+    },
+    "纪录片风格": {
+      "keywords": ["documentary", "realistic", "natural", "authentic", "observational"],
+      "description": "Create a documentary-style video with realistic and natural presentation"
+    },
+    "艺术风格": {
+      "keywords": ["artistic", "creative", "abstract", "expressive", "stylized"],
+      "description": "Create an artistic video with creative and expressive visual elements"
+    },
+    "自然风格": {
+      "keywords": ["natural", "organic", "environmental", "wildlife", "landscape"],
+      "description": "Create a natural video showcasing organic environmental beauty"
+    }
+  },
+  "rhythm_styles": {
+    "缓慢渐变": {
+      "keywords": ["slow", "gradual", "smooth", "flowing", "gentle transition"],
+      "description": "Create a video with slow, gradual transitions and smooth flowing movements"
+    },
+    "快速切换": {
+      "keywords": ["fast", "quick", "rapid", "dynamic cuts", "energetic pace"],
+      "description": "Create a video with fast-paced, quick transitions and dynamic cuts"
+    },
+    "节奏感强": {
+      "keywords": ["rhythmic", "pulsing", "beat-driven", "synchronized", "tempo"],
+      "description": "Create a video with strong rhythm and synchronized, beat-driven movements"
+    }
+  }
+}
