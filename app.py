@@ -104,10 +104,7 @@ class AutoRefreshVideoApp:
             
             if result["status"] == "success":
                 return (
-                    f"🚀 视频生成已启动！\n"
-                    f"📊 使用了 {len(selected_images)} 张 {category} 图片\n"
-                    f"🎨 风格: {style}\n"
-                    f"🔄 自动刷新已启用，每5秒检查一次状态...",
+                    f"🚀 视频生成已启动!",
                     result["session_id"],
                     ""
                 )
@@ -135,32 +132,25 @@ class AutoRefreshVideoApp:
             
             if result["status"] == "completed":
                 return (
-                    f"🎉 [{current_time}] 视频生成完成！\n"
-                    f"🎨 风格: {result['style']}\n"
-                    f"📊 使用了 {result['images_count']} 张 {result['category']} 图片\n"
-                    f"🎬 包含 {result.get('shots_count', 0)} 个镜头\n"
-                    f"✅ 自动刷新已停止",
+                    f"🎉 [{current_time}] 视频生成完成!",
                     result["video_path"],
                     ""
                 )
             elif result["status"] == "in_progress":
                 return (
-                    f"⏳ [{current_time}] {result['message']}\n"
-                    f"🔄 自动刷新中...",
+                    f"⏳ [{current_time}] {result['message']}",
                     None,
                     ""
                 )
             elif result["status"] == "failed":
                 return (
-                    f"❌ [{current_time}] {result['message']}\n"
-                    f"⏹️ 自动刷新已停止",
+                    f"❌ [{current_time}] {result['message']}",
                     None,
                     result['message']
                 )
             else:
                 return (
-                    f"❓ [{current_time}] 状态未知: {result.get('message', '未知状态')}\n"
-                    f"🔄 继续检查中...",
+                    f"❓ [{current_time}] 状态未知: {result.get('message', '未知状态')}",
                     None,
                     result.get('message', '')
                 )
@@ -174,7 +164,7 @@ class AutoRefreshVideoApp:
         """创建Gradio界面"""
         
         with gr.Blocks(
-            title="🎬 AI视频生成器 - 自动刷新版",
+            title="🎬 AI视频生成器",
             theme=gr.themes.Soft()
         ) as interface:
             
@@ -186,34 +176,35 @@ class AutoRefreshVideoApp:
             with gr.Row():
                 # 左侧控制面板
                 with gr.Column(scale=1):
-                    gr.Markdown("## 📁 选择图片分类")
+                    gr.Markdown("### 📁 选择图片分类")
                     category_radio = gr.Radio(
                         choices=list(self.image_categories.keys()),
                         label="图片分类",
                         value=None
                     )
                     
-                    gr.Markdown("## 🎨 选择视频风格")
+                    gr.Markdown("### 🎨 选择视频风格")
                     style_dropdown = gr.Dropdown(
                         choices=self.available_styles,
                         label="视频风格",
                         value=self.available_styles[0] if self.available_styles else None
                     )
                     
-                    gr.Markdown("## 🚀 开始生成")
+                    gr.Markdown("### 🚀 开始生成")
                     start_btn = gr.Button(
                         "🎬 开始生成视频",
                         variant="primary",
                         size="lg"
                     )
                     
-                    gr.Markdown("## 📊 手动检查")
-                    check_btn = gr.Button(
-                        "🔍 立即检查状态",
-                        variant="secondary"
-                    )
+                    # gr.Markdown("## 📊 手动检查")
+                    # check_btn = gr.Button(
+                    #     "🔍 立即检查状态",
+                    #     variant="secondary"
+                    # )
                     
                     # 自动刷新控制
+                    # auto_refresh_enabled = True
                     auto_refresh_enabled = gr.Checkbox(
                         label="🔄 启用自动刷新 (每5秒)",
                         value=True
@@ -285,7 +276,7 @@ class AutoRefreshVideoApp:
             status_display = gr.Textbox(
                 label="📊 状态信息",
                 interactive=False,
-                lines=4
+                lines=1
             )
             
             # 错误信息
@@ -336,7 +327,7 @@ class AutoRefreshVideoApp:
                 if not enabled or not session_id:
                     return gr.update(), gr.update(), gr.update()
                 
-                print(f"[{time.strftime('%H:%M:%S')}] 🔄 自动检查状态: {session_id}")
+                # print(f"[{time.strftime('%H:%M:%S')}] 🔄 自动检查状态: {session_id}")
                 return self.check_status(session_id)
             
             # 组合所有组件用于更新
@@ -375,15 +366,15 @@ class AutoRefreshVideoApp:
             )
             
             # 手动检查
-            check_btn.click(
-                fn=self.check_status,
-                inputs=[session_id_state],
-                outputs=[status_display, video_player, error_display]
-            ).then(
-                fn=lambda error: gr.update(visible=bool(error.strip())),
-                inputs=[error_display],
-                outputs=[error_display]
-            )
+            # check_btn.click(
+            #     fn=self.check_status,
+            #     inputs=[session_id_state],
+            #     outputs=[status_display, video_player, error_display]
+            # ).then(
+            #     fn=lambda error: gr.update(visible=bool(error.strip())),
+            #     inputs=[error_display],
+            #     outputs=[error_display]
+            # )
             
             # 自动刷新定时器 - 关键部分
             refresh_timer.tick(
