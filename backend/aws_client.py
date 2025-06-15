@@ -2,21 +2,29 @@ import boto3
 import json
 import base64
 import time
+import os
 from typing import List, Dict, Any, Optional
 import logging
+from dotenv import load_dotenv
+
+# 加载环境变量
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
 class AWSBedrockClient:
-    def __init__(self, region_name: str = "us-east-1"):
+    def __init__(self, region_name: str = None):
         """
         Initialize AWS Bedrock client
         
         Args:
             region_name: AWS region name
         """
-        self.region_name = region_name
-        self.bedrock_client = boto3.client('bedrock-runtime', region_name=region_name)
+        # 如果未提供区域，则从环境变量中获取
+        self.region_name = region_name or os.getenv("AWS_REGION", "us-east-1")
+        self.bedrock_client = boto3.client('bedrock-runtime', region_name=self.region_name)
+        # 从环境变量中获取 S3 URI
+        self.nova_reel_s3_uri = os.getenv("NOVA_REEL_S3_URI", "s3://alex-bedrock-nova-video/uploads/")
         
     def encode_image_to_base64(self, image_path: str) -> str:
         """
@@ -198,7 +206,7 @@ Example format:
             response = self.bedrock_client.start_async_invoke(
                 modelId="amazon.nova-reel-v1:1",
                 modelInput=body,
-                outputDataConfig={"s3OutputDataConfig": {"s3Uri": "s3://alex-bedrock-nova-video/uploads/"}}
+                outputDataConfig={"s3OutputDataConfig": {"s3Uri": self.nova_reel_s3_uri}}
             )
             
             # Extract job ID

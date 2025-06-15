@@ -5,6 +5,11 @@
 
 import json
 import os
+from dotenv import load_dotenv
+
+# 加载环境变量
+load_dotenv()
+
 from backend.video_generator import VideoGenerator
 
 def main():
