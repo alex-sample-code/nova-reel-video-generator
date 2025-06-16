@@ -1193,19 +1193,94 @@ class AutoRefreshVideoApp:
             
             # 标题和说明
             gr.Markdown("""
-            # 🎬 AI视频生成器
+            ## 🎬 动态营销素材
             """)
             
             with gr.Row():
-                # 左侧控制面板
+                # 左侧：图片分类和选择区域
                 with gr.Column(scale=1):
-                    gr.Markdown("### 📁 选择图片分类")
-                    category_radio = gr.Radio(
-                        choices=list(self.image_categories.keys()),
-                        label="图片分类",
-                        value=None
-                    )
+                    gr.Markdown("### 🖼️ 选择图片 (1-8张)")
                     
+                    # 使用Tab组件来显示图片分类
+                    with gr.Tabs() as category_tabs:
+                        tab_data = {}
+                        
+                        for category_name in self.image_categories.keys():
+                            with gr.Tab(label=f"📁 {category_name.title()}") as tab:
+                                    # 图片网格 - 2行6列
+                                    images = self.get_images_for_category(category_name)
+                                    
+                                    # 存储该tab的组件
+                                    tab_images = []
+                                    tab_buttons = []
+                                    tab_checkboxes = []
+                                    
+                                    # 修改为一行4张图片，共3行，总共12个位置
+                                    for row in range(3):
+                                        with gr.Row():
+                                            for col in range(3):
+                                                i = row * 3 + col
+                                                with gr.Column(scale=1, min_width=100):
+                                                    if i < len(images):
+                                                        # 显示图片
+                                                        image = gr.Image(
+                                                            value=images[i],
+                                                            label="",
+                                                            height=80,
+                                                            width=80,
+                                                            interactive=False,
+                                                            show_label=False,
+                                                            container=True
+                                                        )
+                                                        
+                                                        # 添加点击按钮
+                                                        click_btn = gr.Button(
+                                                            f"📷 选择图片 {i+1}",
+                                                            size="sm",
+                                                            variant="secondary",
+                                                            elem_id=f"click_btn_{category_name}_{i}"
+                                                        )
+                                                    else:
+                                                        # 空位置 - 仍然创建组件但设为不可见
+                                                        image = gr.Image(
+                                                            label="",
+                                                            height=80,
+                                                            width=80,
+                                                            interactive=False,
+                                                            visible=False,
+                                                            show_label=False
+                                                        )
+                                                        click_btn = gr.Button(
+                                                            f"📷 选择图片 {i+1}",
+                                                            size="sm",
+                                                            variant="secondary",
+                                                            visible=False
+                                                        )
+                                                    
+                                                    tab_images.append(image)
+                                                    tab_buttons.append(click_btn)
+                                                    
+                                                    # 隐藏的复选框用于兼容性
+                                                    checkbox = gr.Checkbox(
+                                                        label="",
+                                                        value=False,
+                                                        visible=False
+                                                    )
+                                                    tab_checkboxes.append(checkbox)
+                                    
+                                    # 存储tab数据
+                                    tab_data[category_name] = {
+                                        'tab': tab,
+                                        'images': tab_images,
+                                        'buttons': tab_buttons,
+                                        'checkboxes': tab_checkboxes,
+                                        'image_paths': images
+                                    }
+                    
+                    # 添加空白间距
+                    # gr.Markdown("")
+                    
+                    # 视频风格选择和生成按钮
                     gr.Markdown("### 🎨 选择视频风格")
                     style_dropdown = gr.Dropdown(
                         choices=self.available_styles,
@@ -1213,225 +1288,76 @@ class AutoRefreshVideoApp:
                         value=self.available_styles[0] if self.available_styles else None
                     )
                     
-                    gr.Markdown("### 🚀 开始生成")
                     start_btn = gr.Button(
                         "🎬 开始生成视频",
                         variant="primary",
                         size="lg"
                     )
-                    
-                    # 自动刷新控制 - 隐藏，默认启用
-                    auto_refresh_enabled = gr.Checkbox(
-                        label="🔄 启用自动刷新 (每5秒)",
-                        value=True,
-                        visible=False  # 隐藏此组件
-                    )
-                    
-                # 右侧图片选择区域 - 优化比例
+                
+                # 右侧：视频生成结果区域
                 with gr.Column(scale=2):
-                    gr.Markdown("## 🖼️ 选择图片 (1-8张)")
+                    gr.Markdown("### 📹 生成结果")
                     
-                    # 状态栏区域 - 隐藏
-                    status_bar_display = gr.HTML(
-                        value=self.generate_status_bar_html({'count': 0, 'max_count': 8}),
-                        label="选择状态",
-                        show_label=False,
-                        visible=False  # 隐藏状态栏
+                    # 状态显示
+                    status_display = gr.Textbox(
+                        label="📊 状态信息",
+                        interactive=False,
+                        lines=2
                     )
                     
-                    # 警告提示区域 - 隐藏
-                    warning_display = gr.HTML(
-                        value="",
-                        visible=False,  # 隐藏警告提示
-                        show_label=False
+                    # 错误信息
+                    error_display = gr.Textbox(
+                        label="❌ 错误详情",
+                        interactive=False,
+                        lines=2,
+                        visible=False
                     )
                     
-                    # 优化的图片网格 - 2行6列，使用Image组件和按钮点击
-                    image_components = []
-                    image_click_buttons = []
-                    checkbox_components = []  # 初始化复选框组件列表
-                    
-                    with gr.Row():
-                        for i in range(6):
-                            with gr.Column(scale=1, min_width=120):
-                                # 使用Gradio Image组件显示图片
-                                image = gr.Image(
-                                    label="",
-                                    height=100,
-                                    width=100,
-                                    interactive=False,
-                                    visible=False,
-                                    show_label=False,
-                                    container=True
-                                )
-                                image_components.append(image)
-                                
-                                # 添加点击按钮
-                                click_btn = gr.Button(
-                                    f"📷 选择图片 {i+1}",
-                                    size="sm",
-                                    variant="secondary",
-                                    visible=False,
-                                    elem_id=f"click_btn_{i}"
-                                )
-                                image_click_buttons.append(click_btn)
-                                
-                                # 保留隐藏的复选框用于兼容性
-                                checkbox = gr.Checkbox(
-                                    label="",
-                                    value=False,
-                                    visible=False
-                                )
-                                checkbox_components.append(checkbox)
-                    
-                    with gr.Row():
-                        for i in range(6, 12):
-                            with gr.Column(scale=1, min_width=120):
-                                # 使用Gradio Image组件显示图片
-                                image = gr.Image(
-                                    label="",
-                                    height=100,
-                                    width=100,
-                                    interactive=False,
-                                    visible=False,
-                                    show_label=False,
-                                    container=True
-                                )
-                                image_components.append(image)
-                                
-                                # 添加点击按钮
-                                click_btn = gr.Button(
-                                    f"📷 选择图片 {i+1}",
-                                    size="sm",
-                                    variant="secondary",
-                                    visible=False,
-                                    elem_id=f"click_btn_{i}"
-                                )
-                                image_click_buttons.append(click_btn)
-                                
-                                # 保留隐藏的复选框用于兼容性
-                                checkbox = gr.Checkbox(
-                                    label="",
-                                    value=False,
-                                    visible=False
-                                )
-                                checkbox_components.append(checkbox)
+                    # 视频播放器
+                    video_player = gr.Video(
+                        label="🎥 生成的视频",
+                        height=400
+                    )
             
-            # 结果显示区域
-            gr.Markdown("## 📹 生成结果")
-            
-            # 隐藏的会话ID
+            # 隐藏的组件
             session_id_state = gr.Textbox(
                 label="会话ID",
                 visible=False,
                 interactive=False
             )
             
-            # 状态显示
-            status_display = gr.Textbox(
-                label="📊 状态信息",
-                interactive=False,
-                lines=1
-            )
-            
-            # 错误信息
-            error_display = gr.Textbox(
-                label="❌ 错误详情",
-                interactive=False,
-                lines=2,
+            auto_refresh_enabled = gr.Checkbox(
+                label="🔄 启用自动刷新 (每5秒)",
+                value=True,
                 visible=False
             )
             
-            # 视频播放器
-            video_player = gr.Video(
-                label="🎥 生成的视频",
-                height=400
+            # 当前选择的分类（用于跟踪）
+            current_category = gr.Textbox(
+                value=list(self.image_categories.keys())[0] if self.image_categories else "",
+                visible=False
             )
             
             # 自动刷新定时器
             refresh_timer = gr.Timer(value=5, active=False)
             
             # 事件处理函数
-            def update_image_display(category):
-                """更新图片显示"""
-                if not category:
-                    # 重置选择状态
-                    self.selection_manager.clear_all()
-                    
-                    # 隐藏所有图片和按钮
-                    updates = []
-                    for i in range(12):
-                        updates.append(gr.update(visible=False, value=None))  # image
-                        updates.append(gr.update(visible=False, value=f"📷 选择图片 {i+1}", variant="secondary"))  # click_button - 重置状态
-                        updates.append(gr.update(value=False))  # checkbox (隐藏)
-                    
-                    # 隐藏的组件返回空值
-                    updates.append("")  # status_bar_display (隐藏)
-                    updates.append("")  # warning_display (隐藏)
-                    updates.append(gr.update())  # warning_display visibility (隐藏)
-                    
-                    return updates
+            def handle_image_click_in_tab(category_name, image_index):
+                """处理tab中的图片点击事件"""
+                if not category_name or category_name not in tab_data:
+                    return [gr.update() for _ in range(12)]
                 
-                # 重置当前分类的选择状态
-                self.reset_selection_for_category(category)
-                
-                # 获取图片列表
-                images = self.get_images_for_category(category)
-                
-                updates = []
-                for i in range(12):
-                    if i < len(images):
-                        # 显示图片和按钮，重置按钮状态为未选择
-                        updates.append(gr.update(visible=True, value=images[i]))  # image
-                        updates.append(gr.update(
-                            visible=True, 
-                            value=f"📷 选择图片 {i+1}", 
-                            variant="secondary",
-                            interactive=True
-                        ))  # click_button - 重置为未选择状态
-                    else:
-                        # 隐藏图片和按钮
-                        updates.append(gr.update(visible=False, value=None))  # image
-                        updates.append(gr.update(
-                            visible=False, 
-                            value=f"📷 选择图片 {i+1}", 
-                            variant="secondary"
-                        ))  # click_button
-                    updates.append(gr.update(value=False))  # checkbox (隐藏)
-                
-                # 隐藏的组件返回空值
-                updates.append("")  # status_bar_display (隐藏)
-                updates.append("")  # warning_display (隐藏)
-                updates.append(gr.update())  # warning_display visibility (隐藏)
-                
-                return updates
-                
-                return updates
-            
-            def handle_image_click_by_index(image_index, category):
-                """根据图片索引处理点击事件"""
-                if not category:
-                    # 返回默认状态（隐藏的组件仍需要返回值）
-                    default_buttons = [gr.update() for _ in range(12)]
-                    return "", "", gr.update(), *default_buttons
-                
-                images = self.get_images_for_category(category)
+                images = tab_data[category_name]['image_paths']
                 if image_index >= len(images):
-                    # 返回默认状态
-                    default_buttons = [gr.update() for _ in range(12)]
-                    return "", "", gr.update(), *default_buttons
+                    return [gr.update() for _ in range(12)]
                 
                 image_path = images[image_index]
                 
-                # 处理点击事件（仍然记录状态，但不显示）
-                status_html, warning_html, selection_json, error = self.handle_image_click_with_feedback(
-                    image_path, category
-                )
+                # 处理点击事件
+                self.handle_image_click_with_feedback(image_path, category_name)
                 
-                # 更新所有按钮的显示状态
+                # 更新该tab中所有按钮的状态
                 button_updates = []
-                selection_info = self.selection_manager.get_selection_info()
-                
                 for i in range(12):
                     if i < len(images):
                         current_image = images[i]
@@ -1439,7 +1365,6 @@ class AutoRefreshVideoApp:
                         order_num = self.selection_manager.get_selection_order(current_image)
                         is_disabled = (not is_selected and self.selection_manager.is_full())
                         
-                        # 根据状态设置按钮样式和文本
                         if is_selected and order_num:
                             button_text = f"✅ {order_num}"
                             button_variant = "primary"
@@ -1451,15 +1376,41 @@ class AutoRefreshVideoApp:
                             button_variant = "secondary"
                         
                         button_updates.append(gr.update(
-                            value=button_text, 
+                            value=button_text,
                             variant=button_variant,
                             interactive=not is_disabled
                         ))
                     else:
                         button_updates.append(gr.update())
                 
-                # 返回空值给隐藏的组件，按钮更新正常
-                return "", "", gr.update(), *button_updates
+                return button_updates
+            
+            def reset_selection_for_tab(category_name):
+                """重置tab的选择状态"""
+                if category_name:
+                    self.reset_selection_for_category(category_name)
+                    # 更新按钮状态
+                    button_updates = []
+                    if category_name in tab_data:
+                        images = tab_data[category_name]['image_paths']
+                        for i in range(12):
+                            if i < len(images):
+                                button_updates.append(gr.update(
+                                    value=f"📷 选择图片 {i+1}",
+                                    variant="secondary",
+                                    interactive=True
+                                ))
+                            else:
+                                button_updates.append(gr.update())
+                    else:
+                        # 如果分类不存在，返回12个默认更新
+                        button_updates = [gr.update() for _ in range(12)]
+                    
+                    # 返回分类名和12个按钮更新
+                    return [category_name] + button_updates
+                
+                # 如果没有分类，返回空字符串和12个默认更新
+                return [""] + [gr.update() for _ in range(12)]
             
             def auto_refresh_status(session_id, enabled):
                 """自动刷新状态"""
@@ -1468,35 +1419,32 @@ class AutoRefreshVideoApp:
                 
                 return self.check_status(session_id)
             
-            # 组合所有组件用于更新
-            all_image_components = []
-            for i in range(12):
-                all_image_components.append(image_components[i])       # Image组件
-                all_image_components.append(image_click_buttons[i])    # 点击按钮
-                all_image_components.append(checkbox_components[i])    # 复选框组件
-            # 添加状态栏和警告组件
-            all_image_components.append(status_bar_display)
-            all_image_components.append(warning_display)
-            all_image_components.append(warning_display)  # 用于控制可见性
-            # 绑定事件
-            category_radio.change(
-                fn=update_image_display,
-                inputs=[category_radio],
-                outputs=all_image_components
-            )
-            
-            # 为每个图片点击按钮绑定事件
-            for i, click_btn in enumerate(image_click_buttons):
-                click_btn.click(
-                    fn=lambda cat, idx=i: handle_image_click_by_index(idx, cat),
-                    inputs=[category_radio],
-                    outputs=[status_bar_display, warning_display, warning_display] + image_click_buttons
+            # 为每个tab的按钮绑定事件
+            for category_name, data in tab_data.items():
+                # 当tab被选中时重置选择状态
+                data['tab'].select(
+                    fn=lambda cat=category_name: reset_selection_for_tab(cat),
+                    inputs=[],
+                    outputs=[current_category] + data['buttons']
                 )
+                
+                # 为每个按钮绑定点击事件
+                for i, button in enumerate(data['buttons']):
+                    button.click(
+                        fn=lambda cat=category_name, idx=i: handle_image_click_in_tab(cat, idx),
+                        inputs=[],
+                        outputs=data['buttons']
+                    )
+            
+            # 收集所有复选框用于生成
+            all_checkboxes = []
+            for data in tab_data.values():
+                all_checkboxes.extend(data['checkboxes'])
             
             # 开始生成
             start_result = start_btn.click(
-                fn=self.start_generation,
-                inputs=[category_radio, style_dropdown] + checkbox_components,
+                fn=lambda style, current_cat, *checkbox_vals: self.start_generation(current_cat, style, *checkbox_vals),
+                inputs=[style_dropdown, current_category] + all_checkboxes,
                 outputs=[status_display, session_id_state, error_display]
             )
             
@@ -1514,18 +1462,7 @@ class AutoRefreshVideoApp:
                 outputs=[error_display]
             )
             
-            # 手动检查
-            # check_btn.click(
-            #     fn=self.check_status,
-            #     inputs=[session_id_state],
-            #     outputs=[status_display, video_player, error_display]
-            # ).then(
-            #     fn=lambda error: gr.update(visible=bool(error.strip())),
-            #     inputs=[error_display],
-            #     outputs=[error_display]
-            # )
-            
-            # 自动刷新定时器 - 关键部分
+            # 自动刷新定时器
             refresh_timer.tick(
                 fn=auto_refresh_status,
                 inputs=[session_id_state, auto_refresh_enabled],
