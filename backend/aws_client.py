@@ -188,17 +188,32 @@ Example format:
             import random
             
             # Prepare the request body for Nova Reel multi-shot generation
-            body = {
-                "taskType": "MULTI_SHOT_MANUAL",
-                "multiShotManualParams": {
-                    "shots": shots
-                },
-                "videoGenerationConfig": {
-                    "fps": 24,
-                    "dimension": "1280x720",
-                    "seed": random.randint(0, 2147483648)
-                }
+            if len(images) == 1:
+                body = {
+                    "taskType": "TEXT_VIDEO",
+                    "textToVideoParams": {
+                        "text": shots[0]['text'],
+                        "images": [shots[0]['image']]
+                    },
+                    "videoGenerationConfig": {
+                        "durationSeconds": 6,
+                        "fps": 24,
+                        "dimension": "1280x720",
+                        "seed": random.randint(0, 2147483648)
             }
+                }
+            else:
+                body = {
+                    "taskType": "MULTI_SHOT_MANUAL",
+                    "multiShotManualParams": {
+                        "shots": shots
+                    },
+                    "videoGenerationConfig": {
+                        "fps": 24,
+                        "dimension": "1280x720",
+                        "seed": random.randint(0, 2147483648)
+                    }
+                }
             
             logger.info(f"Starting Nova Reel multi-shot generation with {len(shots)} shots")
             

@@ -1091,7 +1091,7 @@ class AutoRefreshVideoApp:
             )
             
             if result["status"] == "success":
-                success_msg = f"🚀 视频生成已启动! 已选择{len(selected_images)}张图片，按选择顺序处理"
+                success_msg = f"🚀 视频生成已启动!"
                 logger.info(f"视频生成启动成功: session_id={result['session_id']}")
                 return (
                     success_msg,
