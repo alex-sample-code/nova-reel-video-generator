@@ -1161,7 +1161,7 @@ class AutoRefreshVideoApp:
                 )
             elif result["status"] == "in_progress":
                 return (
-                    f"⏳ [{current_time}] {result['message']}",
+                    f"⏳ {result['message']}",
                     None,
                     ""
                 )
@@ -1187,7 +1187,7 @@ class AutoRefreshVideoApp:
         """创建Gradio界面"""
         
         with gr.Blocks(
-            title="🎬 AI视频生成器",
+            title="🎬 动态营销素材",
             theme=gr.themes.Soft()
         ) as interface:
             
@@ -1281,10 +1281,10 @@ class AutoRefreshVideoApp:
                     # gr.Markdown("")
                     
                     # 视频风格选择和生成按钮
-                    gr.Markdown("### 🎨 选择视频风格")
+                    gr.Markdown("### 🎨 选择风格")
                     style_dropdown = gr.Dropdown(
                         choices=self.available_styles,
-                        label="视频风格",
+                        label="风格",
                         value=self.available_styles[0] if self.available_styles else None
                     )
                     
@@ -1296,11 +1296,11 @@ class AutoRefreshVideoApp:
                 
                 # 右侧：视频生成结果区域
                 with gr.Column(scale=2):
-                    gr.Markdown("### 📹 生成结果")
+                    gr.Markdown("### 📹 输出")
                     
                     # 状态显示
                     status_display = gr.Textbox(
-                        label="📊 状态信息",
+                        label="📊 任务状态",
                         interactive=False,
                         lines=2
                     )
@@ -1315,7 +1315,7 @@ class AutoRefreshVideoApp:
                     
                     # 视频播放器
                     video_player = gr.Video(
-                        label="🎥 生成的视频",
+                        label="🎥 预览",
                         height=400
                     )
             
