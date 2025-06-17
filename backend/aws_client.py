@@ -43,7 +43,7 @@ class AWSBedrockClient:
             logger.error(f"Error encoding image {image_path}: {str(e)}")
             raise
     
-    def call_claude_sonnet(self, images: List[str], style: str, category: str) -> List[Dict[str, Any]]:
+    def call_claude_sonnet(self, images: List[str], style: str, style_info: Dict[str, Any], category: str) -> List[Dict[str, Any]]:
         """
         Call Claude Sonnet 3.7 to generate video shot prompts for multi-shot video
         
@@ -57,6 +57,8 @@ class AWSBedrockClient:
         """
         try:
             # Encode images to base64
+            keywords = ", ".join(style_info["keywords"])
+            style_description = style_info['description']
             encoded_images = []
             for i, img_path in enumerate(images):
                 encoded_img = self.encode_image_to_base64(img_path)
@@ -76,6 +78,8 @@ class AWSBedrockClient:
                     "text": f"""You are an expert video prompt generator for Amazon Nova Reel's multi-shot video generation.
 
 Analyze the provided {len(images)} {category} images and create individual shot descriptions for each image with the following style: {style}.
+Style Description: {style_description}
+Style Keywords: {keywords}
 
 For each image, generate a detailed shot description that:
 1. Describes the specific visual elements and composition in that image
@@ -104,7 +108,7 @@ Example format:
             # Prepare the request body
             body = {
                 "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 1000,
+                "max_tokens": 4096,
                 "messages": [
                     {
                         "role": "user",
@@ -214,7 +218,7 @@ Example format:
                         "seed": random.randint(0, 2147483648)
                     }
                 }
-            
+                            
             logger.info(f"Starting Nova Reel multi-shot generation with {len(shots)} shots")
             
             # Start async Nova Reel generation

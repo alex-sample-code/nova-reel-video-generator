@@ -80,10 +80,11 @@ class VideoGenerator:
             logger.info(f"Starting async multi-shot video generation with {len(images)} images, style: {style}, category: {category}")
             
             # Step 1: Generate shot descriptions using Claude Sonnet
-            shots = self.aws_client.call_claude_sonnet(images, style, category)
+            style_info = self.prompt_generator.get_style_info(style)
+            shots = self.aws_client.call_claude_sonnet(images, style, style_info, category)
             
             logger.info(f"Generated {len(shots)} shot descriptions for multi-shot video")
-            
+                        
             # Step 2: Start async multi-shot video generation using Nova Reel
             job_id = self.aws_client.start_async_nova_reel(shots, images)
             
@@ -278,100 +279,3 @@ class VideoGenerator:
                         
         except Exception as e:
             logger.error(f"Error cleaning up videos: {str(e)}")
-    
-    # Keep the original synchronous method for backward compatibility
-    def generate_video(
-        self, 
-        images: List[str], 
-        style: str, 
-        category: str,
-        progress_callback: Callable[[str], None] = None
-    ) -> Dict[str, Any]:
-        """
-        Generate video from images with specified style (synchronous version)
-        
-        Args:
-            images: List of image file paths
-            style: Selected style for the video
-            category: Image category (nature/animals)
-            progress_callback: Callback function to report progress
-            
-        Returns:
-            Dictionary with generation result
-        """
-        try:
-            # Validate inputs
-            if not images:
-                raise ValueError("No images provided")
-            
-            if len(images) > 6:
-                raise ValueError("Maximum 6 images allowed")
-            
-            # Validate image files exist
-            for img_path in images:
-                if not os.path.exists(img_path):
-                    raise FileNotFoundError(f"Image file not found: {img_path}")
-            
-            # Update progress
-            if progress_callback:
-                progress_callback("正在分析图片...")
-            
-            logger.info(f"Starting video generation with {len(images)} images, style: {style}, category: {category}")
-            
-            # Step 1: Generate prompt using Claude Sonnet
-            if progress_callback:
-                progress_callback("正在生成提示词...")
-            
-            base_prompt = self.aws_client.call_claude_sonnet(images, style, category)
-            
-            # Enhance prompt with style information
-            enhanced_prompt = self.prompt_generator.enhance_prompt_with_style(base_prompt, style)
-            
-            logger.info(f"Generated enhanced prompt: {enhanced_prompt}")
-            
-            # Step 2: Generate video using Nova Reel (synchronous)
-            if progress_callback:
-                progress_callback("正在生成视频...")
-            
-            # For backward compatibility, we'll use the old synchronous method if it exists
-            if hasattr(self.aws_client, 'call_nova_reel'):
-                video_data = self.aws_client.call_nova_reel(enhanced_prompt, images)
-            else:
-                raise Exception("Synchronous video generation not available. Please use async method.")
-            
-            # Step 3: Save video file
-            video_filename = f"video_{uuid.uuid4().hex}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
-            video_path = os.path.join(self.output_dir, video_filename)
-            
-            with open(video_path, 'wb') as f:
-                f.write(video_data)
-            
-            logger.info(f"Video saved to: {video_path}")
-            
-            # Update progress
-            if progress_callback:
-                progress_callback("生成完成")
-            
-            return {
-                "status": "success",
-                "message": "视频生成成功",
-                "video_path": video_path,
-                "video_filename": video_filename,
-                "prompt": enhanced_prompt,
-                "images_count": len(images),
-                "style": style,
-                "category": category
-            }
-            
-        except Exception as e:
-            error_msg = f"视频生成失败: {str(e)}"
-            logger.error(error_msg)
-            
-            if progress_callback:
-                progress_callback(f"错误: {str(e)}")
-            
-            return {
-                "status": "error",
-                "message": error_msg,
-                "error_details": str(e)
-            }
