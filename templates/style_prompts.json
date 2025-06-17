@@ -1,12 +1,12 @@
 {
-  "visual_styles": {
-    "电影感": {
-      "keywords": ["cinematic", "dramatic", "film-like", "professional", "artistic"],
-      "description": "Create a cinematic video with dramatic lighting and professional film-like quality"
+  "rhythm_styles": {
+    "舒缓的": {
+      "keywords": ["slow", "gradual", "smooth", "flowing", "gentle transition"],
+      "description": "Create a video with slow, gradual transitions and smooth flowing movements"
     },
-    "纪录片风格": {
-      "keywords": ["documentary", "realistic", "natural", "authentic", "observational"],
-      "description": "Create a documentary-style video with realistic and natural presentation"
+    "节奏感": {
+      "keywords": ["normal speed", "slow motion", "rhythmic", "beat sync", "tempo change"],
+      "description": "Create a video that starts at normal speed and transitions to slow motion in the second half, syncing with musical beats"
     }
   },
   "emotion_styles": {
@@ -19,14 +19,14 @@
       "description": "Create a warm and heartwarming video with cozy, intimate feeling"
     }
   },
-  "rhythm_styles": {
-    "缓慢渐变": {
-      "keywords": ["slow", "gradual", "smooth", "flowing", "gentle transition"],
-      "description": "Create a video with slow, gradual transitions and smooth flowing movements"
+  "visual_styles": {
+    "电影感": {
+      "keywords": ["cinematic", "dramatic", "film-like", "professional", "artistic"],
+      "description": "Create a cinematic video with dramatic lighting and professional film-like quality"
     },
-    "快速切换": {
-      "keywords": ["fast", "quick", "rapid", "dynamic cuts", "energetic pace"],
-      "description": "Create a video with fast-paced, quick transitions and dynamic cuts"
+    "纪录片风格": {
+      "keywords": ["documentary", "realistic", "natural", "authentic", "observational"],
+      "description": "Create a documentary-style video with realistic and natural presentation"
     }
   }
 }

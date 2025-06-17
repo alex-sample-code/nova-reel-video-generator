@@ -78,13 +78,13 @@ class AWSBedrockClient:
                     "text": f"""You are an expert video prompt generator for Amazon Nova Reel's multi-shot video generation.
 
 Analyze the provided {len(images)} {category} images and create individual shot descriptions for each image with the following style: {style}.
-Style Description: {style_description}
-Style Keywords: {keywords}
+Style Description:
+Style Keywords: 
 
 For each image, generate a detailed shot description that:
 1. Describes the specific visual elements and composition in that image
-2. Incorporates the {style} style characteristics
-3. Includes appropriate camera movements (drone shots, tracking, panning, etc.)
+2. Incorporates the {style}, you may use {keywords} to describe {style_description}
+3. Includes appropriate camera movements at begging or end of prompt (drone shots, tracking, panning, etc.)
 4. Specifies visual effects and atmosphere suitable for the style
 5. Ensures smooth narrative flow between shots
 
@@ -96,8 +96,8 @@ The shots should tell a cohesive visual story that flows naturally from one to t
 
 Example format:
 [
-  {{"text": "Epic aerial rise revealing the landscape, dramatic documentary style with dark atmospheric mood", "image_index": 0}},
-  {{"text": "Sweeping drone shot across surface, morning sunlight casting long shadows, documentary style", "image_index": 1}}
+  {{"text": "Cinematic dolly shot of a juicy cheeseburger with melting cheese, fries, and a condensation-covered cola on a worn diner table. Natural lighting, visible steam and droplets. 4k, photorealistic, shallow depth of field", "image_index": 0}},
+  {{"text": "dynamic handheld shot: the dog looks to the left as colored holiday lights on its body blink rhythmically", "image_index": 1}}
 ]"""
                 }
             ]
