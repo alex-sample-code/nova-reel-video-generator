@@ -552,7 +552,7 @@ class AutoRefreshVideoApp:
             category: 当前分类
             
         Returns:
-            List[str]: 12个图片位置的HTML列表
+            List[str]: 16个图片位置的HTML列表 (4行×4列)
         """
         return self.update_image_grid_display(category)
     
@@ -1009,7 +1009,7 @@ class AutoRefreshVideoApp:
             
         except Exception as e:
             logger.error(f"更新图片网格显示时发生错误: {str(e)}")
-            return ["❌ 显示错误"] * 12
+            return ["❌ 显示错误"] * 16
     
     def batch_update_components(self, category: str, updates_needed: List[str]) -> dict:
         """
@@ -1241,75 +1241,75 @@ class AutoRefreshVideoApp:
                         
                         for category_name in self.image_categories.keys():
                             with gr.Tab(label=f"📁 {category_name.title()}") as tab:
-                                # 图片网格 - 4行4列，总共16个位置
-                                images = self.get_images_for_category(category_name)
-                                
-                                # 存储该tab的组件
-                                tab_images = []
-                                tab_buttons = []
-                                tab_checkboxes = []
-                                
-                                # 创建4行4列的图片网格
-                                for row in range(4):
-                                    with gr.Row():
-                                        for col in range(4):
-                                            i = row * 4 + col
-                                            with gr.Column(scale=1, min_width=100):
-                                                if i < len(images):
-                                                    # 显示图片
-                                                    image = gr.Image(
-                                                        value=images[i],
-                                                        label="",
-                                                        height=80,
-                                                        width=80,
-                                                        interactive=False,
-                                                        show_label=False,
-                                                        container=True
-                                                    )
+                                    # 图片网格 - 2行6列
+                                    images = self.get_images_for_category(category_name)
+                                    
+                                    # 存储该tab的组件
+                                    tab_images = []
+                                    tab_buttons = []
+                                    tab_checkboxes = []
+                                    
+                                    # 修改为一行4张图片，共4行，总共16个位置
+                                    for row in range(4):
+                                        with gr.Row():
+                                            for col in range(4):
+                                                i = row * 4 + col
+                                                with gr.Column(scale=1, min_width=100):
+                                                    if i < len(images):
+                                                        # 显示图片
+                                                        image = gr.Image(
+                                                            value=images[i],
+                                                            label="",
+                                                            height=80,
+                                                            width=80,
+                                                            interactive=False,
+                                                            show_label=False,
+                                                            container=True
+                                                        )
+                                                        
+                                                        # 添加点击按钮
+                                                        click_btn = gr.Button(
+                                                            f"📷 选择图片 {i+1}",
+                                                            size="sm",
+                                                            variant="secondary",
+                                                            elem_id=f"click_btn_{category_name}_{i}"
+                                                        )
+                                                    else:
+                                                        # 空位置 - 仍然创建组件但设为不可见
+                                                        image = gr.Image(
+                                                            label="",
+                                                            height=80,
+                                                            width=80,
+                                                            interactive=False,
+                                                            visible=False,
+                                                            show_label=False
+                                                        )
+                                                        click_btn = gr.Button(
+                                                            f"📷 选择图片 {i+1}",
+                                                            size="sm",
+                                                            variant="secondary",
+                                                            visible=False
+                                                        )
                                                     
-                                                    # 添加点击按钮
-                                                    click_btn = gr.Button(
-                                                        f"📷 图片 {i+1}",
-                                                        size="sm",
-                                                        variant="secondary",
-                                                        elem_id=f"click_btn_{category_name}_{i}"
-                                                    )
-                                                else:
-                                                    # 空位置 - 仍然创建组件但设为不可见
-                                                    image = gr.Image(
+                                                    tab_images.append(image)
+                                                    tab_buttons.append(click_btn)
+                                                    
+                                                    # 隐藏的复选框用于兼容性
+                                                    checkbox = gr.Checkbox(
                                                         label="",
-                                                        height=80,
-                                                        width=80,
-                                                        interactive=False,
-                                                        visible=False,
-                                                        show_label=False
-                                                    )
-                                                    click_btn = gr.Button(
-                                                        f"📷 选择图片 {i+1}",
-                                                        size="sm",
-                                                        variant="secondary",
+                                                        value=False,
                                                         visible=False
                                                     )
-                                                
-                                                tab_images.append(image)
-                                                tab_buttons.append(click_btn)
-                                                
-                                                # 隐藏的复选框用于兼容性
-                                                checkbox = gr.Checkbox(
-                                                    label="",
-                                                    value=False,
-                                                    visible=False
-                                                )
-                                                tab_checkboxes.append(checkbox)
-                                
-                                # 存储tab数据
-                                tab_data[category_name] = {
-                                    'tab': tab,
-                                    'images': tab_images,
-                                    'buttons': tab_buttons,
-                                    'checkboxes': tab_checkboxes,
-                                    'image_paths': images
-                                }
+                                                    tab_checkboxes.append(checkbox)
+                                    
+                                    # 存储tab数据
+                                    tab_data[category_name] = {
+                                        'tab': tab,
+                                        'images': tab_images,
+                                        'buttons': tab_buttons,
+                                        'checkboxes': tab_checkboxes,
+                                        'image_paths': images
+                                    }
                     
                     # 添加空白间距
                     # gr.Markdown("")
@@ -1327,9 +1327,9 @@ class AutoRefreshVideoApp:
                         variant="primary",
                         size="lg"
                     )
-                
+            with gr.Row():
                 # 右侧：视频生成结果区域
-                with gr.Column(scale=2):
+                with gr.Column(scale=1):
                     gr.Markdown("### 📹 输出")
                     
                     # 状态显示
@@ -1350,7 +1350,7 @@ class AutoRefreshVideoApp:
                     # 视频播放器
                     video_player = gr.Video(
                         label="🎥 预览",
-                        height=400
+                        height=800
                     )
             
             # 隐藏的组件
@@ -1392,7 +1392,7 @@ class AutoRefreshVideoApp:
                 
                 # 更新该tab中所有按钮的状态
                 button_updates = []
-                for i in range(16):
+                for i in range(16):  # 4行×4列=16个按钮
                     if i < len(images):
                         current_image = images[i]
                         is_selected = self.selection_manager.is_selected(current_image)
@@ -1427,7 +1427,7 @@ class AutoRefreshVideoApp:
                     button_updates = []
                     if category_name in tab_data:
                         images = tab_data[category_name]['image_paths']
-                        for i in range(16):
+                        for i in range(16):  # 4行×4列=16个按钮
                             if i < len(images):
                                 button_updates.append(gr.update(
                                     value=f"📷 选择图片 {i+1}",
